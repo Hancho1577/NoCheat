@@ -1,0 +1,5 @@
+name: NoCheat
+author: Hancho
+version: 1.0.0
+main: noCheat.NoCheat
+api: [1.0.0]
