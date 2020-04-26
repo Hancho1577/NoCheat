@@ -1,22 +1,31 @@
 package noCheat;
 
+import java.util.Collections;
+import java.util.HashSet;
 import java.util.Hashtable;
+import java.util.Set;
 
 import cn.nukkit.Player;
 import cn.nukkit.event.EventHandler;
 import cn.nukkit.event.EventPriority;
 import cn.nukkit.event.Listener;
 import cn.nukkit.event.block.BlockBreakEvent;
+import cn.nukkit.event.player.PlayerJoinEvent;
+import cn.nukkit.scheduler.AsyncTask;
 import cn.nukkit.scheduler.Task;
+import cn.nukkit.utils.Config;
 
 public class Nuker implements Listener{
 	public Hashtable<String, Hashtable<Integer, Short>> list = new Hashtable<String, Hashtable<Integer,Short>>();
 	public Hashtable<String, Short> detectCounter = new Hashtable<String, Short>(); //핵으로 감지된 횟수
+	public Set<String> queue;
 	
 	NoCheat owner;
 	public Nuker(NoCheat owner) {
 		this.owner = owner;
-		
+		Config nukerData = new Config(owner.getDataFolder().getAbsolutePath() + "/nukerQueue.yml", Config.YAML);
+		this.queue = Collections.synchronizedSet((HashSet<String>)nukerData.get("queue", new HashSet<String>()));
+
 		// clean task
 		owner.getServer().getScheduler().scheduleRepeatingTask(new Task() {
 			
@@ -26,26 +35,30 @@ public class Nuker implements Listener{
 			}
 		}, 20 * 30, false);
 	}
+
+	@EventHandler
+	public void onPlayerJoin(PlayerJoinEvent ev){
+		if(queue.contains(ev.getPlayer().getName())){
+			ev.getPlayer().setGamemode(0);
+			queue.remove(ev.getPlayer().getName());
+		}
+	}
 	
 	@EventHandler (priority = EventPriority.HIGHEST)
 	public void detectNuker(BlockBreakEvent ev) {
 		Player player = ev.getPlayer();
-		if(player.isOnline() == false) {
-			return;
-		}
-		if(player.isOp()) {
-			return;
-		}
-		if(player.getGamemode() == 1) {
-			return;
-		}
+		if(!player.isOnline()) return;
+		if(player.isOp()) return;
+		if(player.getGamemode() == 1) return;
+		if(this.queue.contains(player.getName())) return;
+
 		if(getCount(player.getName()) >= 6) {
 			if(getDetectCount(player.getName()) < 3) {
 				this.addDetectCount(player.getName());
 				this.setCount(player.getName(), (short)0);
 			}else {
-				player.kick("재접속 해주세요.\n코드 0");
-				owner.sendMessage("@everyone" + player.getName() + "님이 ``광산핵(두더지핵)``으로 의심됩니다.\n 해당 플레이어의 현재 위치 : " + player.toString());
+				this.queue.add(player.getName());
+				this.addKickQueue(player);
 				ev.setCancelled(true);
 				return;
 			}
@@ -91,4 +104,18 @@ public class Nuker implements Listener{
 		detectCounter.clear();
 	}
 
+	public void addKickQueue(Player player){
+		player.setGamemode(2);
+		owner.getServer().getScheduler().scheduleDelayedTask(owner, new AsyncTask() {
+			@Override
+			public void onRun() {
+				if(player.isOnline()){
+					player.setGamemode(0);
+					player.kick("재접속 해주세요.\n코드 0");
+					queue.remove(player.getName());
+					owner.sendMessage("@here\n" + player.getName() + "님이 ``광산핵(두더지핵)``으로 의심됩니다.\n 해당 플레이어의 현재 위치 : " + player.toString());
+				}
+			}
+		}, 40, true);
+	}
 }

@@ -18,6 +18,11 @@
 			<version>1.0-SNAPSHOT</version>
 			<scope>provided</scope>
 		</dependency>
+		<dependency>
+			<groupId>hancho.plugin.nukkit.discordAPI</groupId>
+			<artifactId>HcDiscordBot</artifactId>
+			<version>0.0.1-SNAPSHOT</version>
+		</dependency>
 	</dependencies>
 	<build>
 		<finalName>${project.artifactId}-${project.version}</finalName>
