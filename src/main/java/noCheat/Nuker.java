@@ -18,28 +18,18 @@ import cn.nukkit.scheduler.Task;
 import cn.nukkit.utils.Config;
 
 public class Nuker implements Listener{
-	public Hashtable<String, Hashtable<Integer, Short>> list = new Hashtable<String, Hashtable<Integer,Short>>();
-	public Hashtable<String, Short> detectCounter = new Hashtable<String, Short>(); //핵으로 감지된 횟수
+	public Hashtable<String, Hashtable<Integer, Short>> list = new Hashtable<>(); //비동기 관련 문제로 Hashtable 사용
+	public Hashtable<String, Short> detectCounter = new Hashtable<>(); //핵으로 감지된 횟수
 	public Set<String> queue;
-	private HashSet<Integer> checkList = new HashSet<>();
-	
+
 	NoCheat owner;
 	public Nuker(NoCheat owner) {
 		this.owner = owner;
 		Config nukerData = new Config(owner.getDataFolder().getAbsolutePath() + "/nukerQueue.yml", Config.YAML);
-		this.queue = Collections.synchronizedSet((HashSet<String>)nukerData.get("queue", new HashSet<String>()));
-
-		this.checkList.add(BlockID.STONE);
-		this.checkList.add(BlockID.REDSTONE_ORE);
-		this.checkList.add(BlockID.COAL_ORE);
-		this.checkList.add(BlockID.DIAMOND_ORE);
-		this.checkList.add(BlockID.EMERALD_ORE);
-		this.checkList.add(BlockID.GOLD_ORE);
-		this.checkList.add(BlockID.IRON_ORE);
-		this.checkList.add(BlockID.LAPIS_ORE);
+		this.queue = Collections.synchronizedSet(nukerData.get("queue", new HashSet<String>()));
 		// clean task
 		owner.getServer().getScheduler().scheduleRepeatingTask(new Task() {
-			
+
 			@Override
 			public void onRun(int currentTick) {
 				cleanList();
@@ -61,7 +51,7 @@ public class Nuker implements Listener{
 		if(!player.isOnline()) return;
 		if(player.isOp()) return;
 		if(player.getGamemode() == 1) return;
-		if(!this.checkList.contains(ev.getBlock().getId())) return;
+		if(!ev.getBlock().isSolid()) return;
 		if(this.queue.contains(player.getName())) return;
 
 		if(getCount(player.getName()) >= 6) {
