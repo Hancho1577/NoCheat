@@ -6,8 +6,6 @@ import java.util.Hashtable;
 import java.util.Set;
 
 import cn.nukkit.Player;
-import cn.nukkit.block.BlockID;
-import cn.nukkit.block.BlockStone;
 import cn.nukkit.event.EventHandler;
 import cn.nukkit.event.EventPriority;
 import cn.nukkit.event.Listener;
@@ -26,7 +24,7 @@ public class Nuker implements Listener{
 	public Nuker(NoCheat owner) {
 		this.owner = owner;
 		Config nukerData = new Config(owner.getDataFolder().getAbsolutePath() + "/nukerQueue.yml", Config.YAML);
-		this.queue = Collections.synchronizedSet(nukerData.get("queue", new HashSet<String>()));
+		this.queue = Collections.synchronizedSet(nukerData.get("queue", new HashSet<>()));
 		// clean task
 		owner.getServer().getScheduler().scheduleRepeatingTask(new Task() {
 
@@ -73,12 +71,12 @@ public class Nuker implements Listener{
 	}
 	
 	public short getCount(String name) {
-		Hashtable<Integer, Short> map = list.getOrDefault(name, new Hashtable<Integer, Short>());
+		Hashtable<Integer, Short> map = list.getOrDefault(name, new Hashtable<>());
 		return map.getOrDefault(getTime(), (short)0);
 	}
 	
 	public void addCount(String name) {
-		Hashtable<Integer, Short> map = list.getOrDefault(name, new Hashtable<Integer, Short>());
+		Hashtable<Integer, Short> map = list.getOrDefault(name, new Hashtable<>());
 		short count = map.getOrDefault(getTime(), (short)0);
 		count++;
 		
@@ -87,7 +85,7 @@ public class Nuker implements Listener{
 	}
 	
 	public void setCount(String name, short count) {
-		Hashtable<Integer, Short> map = list.getOrDefault(name, new Hashtable<Integer, Short>());
+		Hashtable<Integer, Short> map = list.getOrDefault(name, new Hashtable<>());
 		
 		map.put(getTime(), count);
 		list.put(name, map);
