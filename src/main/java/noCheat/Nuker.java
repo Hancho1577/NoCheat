@@ -6,6 +6,8 @@ import java.util.Hashtable;
 import java.util.Set;
 
 import cn.nukkit.Player;
+import cn.nukkit.block.BlockID;
+import cn.nukkit.block.BlockStone;
 import cn.nukkit.event.EventHandler;
 import cn.nukkit.event.EventPriority;
 import cn.nukkit.event.Listener;
@@ -19,6 +21,7 @@ public class Nuker implements Listener{
 	public Hashtable<String, Hashtable<Integer, Short>> list = new Hashtable<String, Hashtable<Integer,Short>>();
 	public Hashtable<String, Short> detectCounter = new Hashtable<String, Short>(); //핵으로 감지된 횟수
 	public Set<String> queue;
+	private HashSet<Integer> checkList = new HashSet<>();
 	
 	NoCheat owner;
 	public Nuker(NoCheat owner) {
@@ -26,6 +29,14 @@ public class Nuker implements Listener{
 		Config nukerData = new Config(owner.getDataFolder().getAbsolutePath() + "/nukerQueue.yml", Config.YAML);
 		this.queue = Collections.synchronizedSet((HashSet<String>)nukerData.get("queue", new HashSet<String>()));
 
+		this.checkList.add(BlockID.STONE);
+		this.checkList.add(BlockID.REDSTONE_ORE);
+		this.checkList.add(BlockID.COAL_ORE);
+		this.checkList.add(BlockID.DIAMOND_ORE);
+		this.checkList.add(BlockID.EMERALD_ORE);
+		this.checkList.add(BlockID.GOLD_ORE);
+		this.checkList.add(BlockID.IRON_ORE);
+		this.checkList.add(BlockID.LAPIS_ORE);
 		// clean task
 		owner.getServer().getScheduler().scheduleRepeatingTask(new Task() {
 			
@@ -50,6 +61,7 @@ public class Nuker implements Listener{
 		if(!player.isOnline()) return;
 		if(player.isOp()) return;
 		if(player.getGamemode() == 1) return;
+		if(!this.checkList.contains(ev.getBlock().getId())) return;
 		if(this.queue.contains(player.getName())) return;
 
 		if(getCount(player.getName()) >= 6) {
